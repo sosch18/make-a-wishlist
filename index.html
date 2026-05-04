@@ -1,16 +1,9 @@
+html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Wishlist">
-    
-    <!-- App Icon (SVG encoded as Base64 for zero-setup hosting) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%237c3aed'/%3E%3Cpath d='M50 20l9.27 18.78L80 41.79l-15 14.62L68.54 77 50 67.27 31.46 77 35 56.41l-15-14.62 20.73-3.01L50 20z' fill='%23fbbf24'/%3E%3Ccircle cx='75' cy='25' r='5' fill='white' opacity='0.8'/%3E%3Ccircle cx='25' cy='75' r='3' fill='white' opacity='0.6'/%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%237c3aed'/%3E%3Cpath d='M50 20l9.27 18.78L80 41.79l-15 14.62L68.54 77 50 67.27 31.46 77 35 56.41l-15-14.62 20.73-3.01L50 20z' fill='%23fbbf24'/%3E%3Ccircle cx='75' cy='25' r='5' fill='white' opacity='0.8'/%3E%3Ccircle cx='25' cy='75' r='3' fill='white' opacity='0.6'/%3E%3C/svg%3E">
-
     <title>Make a Wishlist</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -193,7 +186,7 @@
         </button>
     </nav>
 
-    <!-- Modals (Simplified versions of the above UI blocks) -->
+    <!-- Modals -->
     <div id="wish-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
         <div class="glass-card w-full max-w-sm p-6 overflow-y-auto max-h-[90vh] relative shadow-2xl">
             <button onclick="closeModal('wish-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
@@ -262,73 +255,115 @@
                         <span class="text-xs font-bold text-slate-500">Gift</span>
                     </button>
                 </div>
+                
                 <div id="purchase-details" class="space-y-3">
-                    <div><label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block">Method</label>
-                    <select id="purchase-type" class="w-full p-3 rounded-xl outline-none"><option>Retail</option><option>On Sale</option><option>Secondhand</option></select></div>
-                    <div><label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block">Final Price (€)</label>
-                    <input type="number" id="purchase-price" step="0.01" class="w-full p-3 rounded-xl outline-none"></div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Method</label>
+                        <select id="purchase-type" class="w-full p-3 rounded-xl outline-none">
+                            <option value="Retail">Retail</option>
+                            <option value="On Sale">On Sale</option>
+                            <option value="Secondhand">Secondhand</option>
+                            <option value="Dupe">Dupe</option>
+                            <option value="DIY Project">DIY Project</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Final Price (€)</label>
+                        <input type="number" id="purchase-price" step="0.01" class="w-full p-3 rounded-xl outline-none">
+                    </div>
                 </div>
+
                 <div id="gift-details" class="space-y-3 hidden">
-                    <div><label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block">Gifted By</label>
-                    <input type="text" id="gift-giver" placeholder="e.g. Mom" class="w-full p-3 rounded-xl outline-none"></div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Gifted By</label>
+                        <input type="text" id="gift-giver" placeholder="e.g. Mom" class="w-full p-3 rounded-xl outline-none">
+                    </div>
                 </div>
-                <button onclick="confirmFulfillment()" class="w-full p-4 rounded-xl bg-emerald-600 text-white font-bold shadow-lg mt-2">Confirm</button>
+
+                <button onclick="confirmFulfillment()" class="w-full p-4 rounded-xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-100 mt-2 hover:bg-emerald-700 transition-colors">Confirm</button>
             </div>
         </div>
     </div>
 
     <div id="friend-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
         <div class="glass-card w-full max-w-sm p-6 relative">
-            <button onclick="closeModal('friend-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500"><i data-lucide="x"></i></button>
+            <button onclick="closeModal('friend-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
             <h3 class="text-xl font-bold mb-6 text-slate-800">Add Person</h3>
             <form id="friend-form" class="space-y-4">
-                <input type="text" id="friend-name" required class="w-full p-3 rounded-xl outline-none" placeholder="Name">
-                <button type="submit" class="w-full p-4 rounded-xl bg-blue-600 text-white font-bold">Save Person</button>
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Name</label>
+                    <input type="text" id="friend-name" required class="w-full p-3 rounded-xl outline-none" placeholder="e.g. Sarah">
+                </div>
+                <button type="submit" class="w-full p-4 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-100 mt-2 hover:bg-blue-700 transition-colors">Save Person</button>
             </form>
         </div>
     </div>
 
     <div id="idea-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
         <div class="glass-card w-full max-w-sm p-6 relative">
-            <button onclick="closeModal('idea-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500"><i data-lucide="x"></i></button>
+            <button onclick="closeModal('idea-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
             <h3 class="text-xl font-bold mb-6 text-slate-800">New Gift Idea</h3>
             <form id="idea-form" class="space-y-4">
                 <input type="hidden" id="idea-person-id">
-                <input type="text" id="idea-title" required class="w-full p-3 rounded-xl outline-none" placeholder="Item name">
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="idea-price" step="0.01" class="w-full p-3 rounded-xl outline-none" placeholder="Price">
-                    <input type="url" id="idea-link" placeholder="Link" class="w-full p-3 rounded-xl outline-none">
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">What</label>
+                    <input type="text" id="idea-title" required class="w-full p-3 rounded-xl outline-none" placeholder="Item name">
                 </div>
-                <button type="submit" class="w-full p-4 rounded-xl bg-violet-600 text-white font-bold">Add Idea</button>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Price (€)</label>
+                        <input type="number" id="idea-price" step="0.01" class="w-full p-3 rounded-xl outline-none" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Link</label>
+                        <input type="url" id="idea-link" placeholder="https://" class="w-full p-3 rounded-xl outline-none">
+                    </div>
+                </div>
+                <button type="submit" class="w-full p-4 rounded-xl bg-violet-600 text-white font-bold shadow-lg shadow-violet-100 mt-2 hover:bg-violet-700 transition-colors">Add Idea</button>
             </form>
         </div>
     </div>
 
+    <!-- CUSTOM CONFIRM DIALOG -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/20 backdrop-blur-md z-[200] hidden items-center justify-center p-6">
         <div class="glass-card w-full max-w-[280px] p-6 text-center shadow-2xl scale-95 transition-transform" id="confirm-box">
-            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="alert-triangle"></i></div>
+            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
             <h4 class="font-bold text-slate-800 mb-2">Are you sure?</h4>
             <p id="confirm-message" class="text-xs text-slate-500 mb-6 leading-relaxed">This action cannot be undone.</p>
             <div class="grid grid-cols-2 gap-3">
-                <button id="confirm-cancel" class="p-3 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold">Cancel</button>
-                <button id="confirm-ok" class="p-3 rounded-xl bg-red-500 text-white text-xs font-bold">Delete</button>
+                <button id="confirm-cancel" class="p-3 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold active:scale-95 transition-transform">Cancel</button>
+                <button id="confirm-ok" class="p-3 rounded-xl bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-200 active:scale-95 transition-transform">Delete</button>
             </div>
         </div>
     </div>
 
     <div id="settings-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
         <div class="glass-card w-full max-w-sm p-6 relative">
-            <button onclick="closeModal('settings-modal')" class="absolute top-4 right-4 p-1 rounded-full text-slate-500"><i data-lucide="x"></i></button>
+            <button onclick="closeModal('settings-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
             <h3 class="text-xl font-bold mb-6 text-slate-800">Settings</h3>
             <div class="space-y-3">
-                <button onclick="exportData()" class="w-full p-4 rounded-xl bg-white/50 flex justify-between font-medium">Backup Everything <i data-lucide="download"></i></button>
-                <label class="w-full p-4 rounded-xl bg-white/50 flex justify-between cursor-pointer font-medium">Import Data <i data-lucide="upload"></i><input type="file" id="import-file" class="hidden" onchange="importData(event)"></label>
+                <button onclick="exportData()" class="w-full p-4 rounded-xl bg-white/50 flex items-center justify-between font-medium hover:bg-white/70 transition-colors">
+                    <span>Backup Everything</span>
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                </button>
+                <label class="w-full p-4 rounded-xl bg-white/50 flex items-center justify-between cursor-pointer font-medium hover:bg-white/70 transition-colors">
+                    <span>Import Data</span>
+                    <i data-lucide="upload" class="w-4 h-4"></i>
+                    <input type="file" id="import-file" class="hidden" onchange="importData(event)">
+                </label>
             </div>
         </div>
     </div>
 
     <script>
-        // Core Logic (Remains unchanged from previous version for consistency)
         let wishes = JSON.parse(localStorage.getItem('wishes')) || [];
         let friends = JSON.parse(localStorage.getItem('friends')) || [];
         let openCategories = { 'must-haves': true, 'nice-to-haves': false, 'lucky-finds': false };
@@ -341,6 +376,31 @@
             lucide.createIcons();
             createShootingStars();
             render();
+        }
+
+        // Custom Confirm logic
+        function customConfirm(message) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('confirm-modal');
+                const box = document.getElementById('confirm-box');
+                document.getElementById('confirm-message').innerText = message;
+                
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => box.classList.remove('scale-95'), 10);
+
+                const cleanup = (val) => {
+                    box.classList.add('scale-95');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                    }, 150);
+                    resolve(val);
+                };
+
+                document.getElementById('confirm-ok').onclick = () => cleanup(true);
+                document.getElementById('confirm-cancel').onclick = () => cleanup(false);
+            });
         }
 
         function createShootingStars() {
@@ -366,9 +426,16 @@
             currentTab = tabId;
             document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
             const wishBtn = document.getElementById('btn-make-wish');
-            if (tabId === 'wishes') { wishBtn.classList.remove('hidden'); wishBtn.classList.add('flex'); }
-            else { wishBtn.classList.add('hidden'); wishBtn.classList.remove('flex'); }
+            if (tabId === 'wishes') {
+                wishBtn.classList.remove('hidden');
+                wishBtn.classList.add('flex');
+            } else {
+                wishBtn.classList.add('hidden');
+                wishBtn.classList.remove('flex');
+            }
+
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             document.getElementById(`nav-${tabId}`).classList.add('active');
             render();
@@ -382,10 +449,13 @@
         function openWishModal(id = null) {
             const modal = document.getElementById('wish-modal');
             const form = document.getElementById('wish-form');
-            form.reset(); tempImageData = null;
+            form.reset();
+            tempImageData = null;
             document.getElementById('image-preview').innerHTML = '';
             document.getElementById('image-preview').classList.add('hidden');
             document.getElementById('edit-id').value = id || '';
+            document.getElementById('modal-title').innerText = id ? 'Edit Wish' : 'Make a Wish';
+
             if (id) {
                 const wish = wishes.find(w => w.id === id);
                 document.getElementById('wish-title').value = wish.title;
@@ -393,9 +463,13 @@
                 document.getElementById('wish-price').value = wish.price || '';
                 document.getElementById('wish-link').value = wish.link || '';
                 document.getElementById('wish-notes').value = wish.notes || '';
-                if (wish.photo) { tempImageData = wish.photo; updateImagePreview(wish.photo); }
+                if (wish.photo) {
+                    tempImageData = wish.photo;
+                    updateImagePreview(wish.photo);
+                }
             }
-            modal.classList.remove('hidden'); modal.classList.add('flex');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
         }
 
         function closeModal(id) {
@@ -407,7 +481,10 @@
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = (event) => { tempImageData = event.target.result; updateImagePreview(tempImageData); };
+            reader.onload = (event) => {
+                tempImageData = event.target.result;
+                updateImagePreview(tempImageData);
+            };
             reader.readAsDataURL(file);
         }
 
@@ -430,111 +507,323 @@
                 fulfilled: false,
                 dateCreated: id ? wishes.find(w => w.id === id).dateCreated : new Date().toISOString()
             };
-            if (id) { const index = wishes.findIndex(w => w.id === id); wishes[index] = { ...wishes[index], ...data }; }
-            else { data.id = Date.now().toString(); wishes.unshift(data); }
-            saveData(); closeModal('wish-modal');
+
+            if (id) {
+                const index = wishes.findIndex(w => w.id === id);
+                wishes[index] = { ...wishes[index], ...data };
+            } else {
+                data.id = Date.now().toString();
+                wishes.unshift(data);
+            }
+            saveData();
+            closeModal('wish-modal');
         };
 
-        function openFulfillModal(id) { fulfillTargetId = id; setFulfillType('bought'); document.getElementById('fulfill-modal').classList.remove('hidden'); document.getElementById('fulfill-modal').classList.add('flex'); }
+        function openFulfillModal(id) {
+            fulfillTargetId = id;
+            setFulfillType('bought');
+            const modal = document.getElementById('fulfill-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
         function setFulfillType(type) {
             fulfillType = type;
-            const btnB = document.getElementById('btn-bought'), btnG = document.getElementById('btn-gift');
-            const p = document.getElementById('purchase-details'), g = document.getElementById('gift-details');
-            if (type === 'bought') { btnB.classList.add('border-violet-500', 'bg-violet-50'); btnG.classList.remove('border-violet-500', 'bg-violet-50'); p.classList.remove('hidden'); g.classList.add('hidden'); }
-            else { btnG.classList.add('border-violet-500', 'bg-violet-50'); btnB.classList.remove('border-violet-500', 'bg-violet-50'); g.classList.remove('hidden'); p.classList.add('hidden'); }
+            const btnB = document.getElementById('btn-bought');
+            const btnG = document.getElementById('btn-gift');
+            const purchaseDetails = document.getElementById('purchase-details');
+            const giftDetails = document.getElementById('gift-details');
+
+            if (type === 'bought') {
+                btnB.classList.add('border-violet-500', 'bg-violet-50');
+                btnG.classList.remove('border-violet-500', 'bg-violet-50');
+                purchaseDetails.classList.remove('hidden');
+                giftDetails.classList.add('hidden');
+            } else {
+                btnG.classList.add('border-violet-500', 'bg-violet-50');
+                btnB.classList.remove('border-violet-500', 'bg-violet-50');
+                purchaseDetails.classList.add('hidden');
+                giftDetails.classList.remove('hidden');
+            }
         }
 
         function confirmFulfillment() {
             const wish = wishes.find(w => w.id === fulfillTargetId);
             if (!wish) return;
-            wish.fulfilled = true; wish.dateFulfilled = new Date().toISOString(); wish.fulfillType = fulfillType;
-            if (fulfillType === 'bought') { wish.purchaseType = document.getElementById('purchase-type').value; wish.purchasePrice = parseFloat(document.getElementById('purchase-price').value) || 0; }
-            else { wish.giftGiver = document.getElementById('gift-giver').value || null; }
-            saveData(); closeModal('fulfill-modal');
+
+            wish.fulfilled = true;
+            wish.dateFulfilled = new Date().toISOString();
+            wish.fulfillType = fulfillType;
+
+            if (fulfillType === 'bought') {
+                wish.purchaseType = document.getElementById('purchase-type').value;
+                wish.purchasePrice = parseFloat(document.getElementById('purchase-price').value) || 0;
+                wish.giftGiver = null;
+            } else {
+                wish.purchaseType = 'Gift';
+                wish.purchasePrice = 0;
+                wish.giftGiver = document.getElementById('gift-giver').value || null;
+            }
+
+            saveData();
+            closeModal('fulfill-modal');
         }
 
-        function openFriendModal() { document.getElementById('friend-modal').classList.remove('hidden'); document.getElementById('friend-modal').classList.add('flex'); }
-        document.getElementById('friend-form').onsubmit = (e) => { e.preventDefault(); friends.push({ id: Date.now().toString(), name: document.getElementById('friend-name').value, ideas: [] }); saveData(); closeModal('friend-modal'); };
+        function openFriendModal() {
+            document.getElementById('friend-form').reset();
+            const modal = document.getElementById('friend-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
 
-        function openIdeaModal(personId) { document.getElementById('idea-person-id').value = personId; document.getElementById('idea-modal').classList.remove('hidden'); document.getElementById('idea-modal').classList.add('flex'); }
-        document.getElementById('idea-form').onsubmit = (e) => { e.preventDefault(); const f = friends.find(fr => fr.id === document.getElementById('idea-person-id').value); if (f) f.ideas.push({ id: Date.now().toString(), title: document.getElementById('idea-title').value, price: parseFloat(document.getElementById('idea-price').value) || 0, link: document.getElementById('idea-link').value, done: false }); saveData(); closeModal('idea-modal'); };
-
-        function toggleIdeaDone(fId, iId) { const f = friends.find(fr => fr.id === fId); const i = f.ideas.find(id => id.id === iId); i.done = !i.done; saveData(); }
-        function customConfirm(msg) {
-            return new Promise(res => {
-                document.getElementById('confirm-message').innerText = msg;
-                document.getElementById('confirm-modal').classList.remove('hidden');
-                document.getElementById('confirm-modal').classList.add('flex');
-                document.getElementById('confirm-ok').onclick = () => { document.getElementById('confirm-modal').classList.add('hidden'); res(true); };
-                document.getElementById('confirm-cancel').onclick = () => { document.getElementById('confirm-modal').classList.add('hidden'); res(false); };
+        document.getElementById('friend-form').onsubmit = (e) => {
+            e.preventDefault();
+            friends.push({
+                id: Date.now().toString(),
+                name: document.getElementById('friend-name').value,
+                ideas: []
             });
+            saveData();
+            closeModal('friend-modal');
+        };
+
+        async function deletePerson(e, id) {
+            if (e) e.stopPropagation();
+            const confirmed = await customConfirm('Delete this person and all their gift ideas?');
+            if (confirmed) {
+                friends = friends.filter(f => f.id !== id);
+                saveData();
+            }
         }
 
-        async function deleteWish(e, id) { e.stopPropagation(); if (await customConfirm('Delete this wish?')) { wishes = wishes.filter(w => w.id !== id); saveData(); } }
-        async function deletePerson(e, id) { e.stopPropagation(); if (await customConfirm('Delete this person?')) { friends = friends.filter(f => f.id !== id); saveData(); } }
-        async function deleteIdea(fId, iId) { if (await customConfirm('Remove this idea?')) { const f = friends.find(fr => fr.id === fId); f.ideas = f.ideas.filter(i => i.id !== iId); saveData(); } }
+        function openIdeaModal(personId) {
+            document.getElementById('idea-form').reset();
+            document.getElementById('idea-person-id').value = personId;
+            const modal = document.getElementById('idea-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
 
-        function formatCurrency(v) { return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(v); }
+        document.getElementById('idea-form').onsubmit = (e) => {
+            e.preventDefault();
+            const personId = document.getElementById('idea-person-id').value;
+            const friend = friends.find(f => f.id === personId);
+            if (friend) {
+                friend.ideas.push({
+                    id: Date.now().toString(),
+                    title: document.getElementById('idea-title').value,
+                    price: parseFloat(document.getElementById('idea-price').value) || 0,
+                    link: document.getElementById('idea-link').value,
+                    done: false
+                });
+                saveData();
+            }
+            closeModal('idea-modal');
+        };
 
-        function render() { renderWishes(); renderGallery(); renderFriends(); lucide.createIcons(); }
+        function toggleIdeaDone(personId, ideaId) {
+            const friend = friends.find(f => f.id === personId);
+            if (friend) {
+                const idea = friend.ideas.find(i => i.id === ideaId);
+                if (idea) idea.done = !idea.done;
+                saveData();
+            }
+        }
+
+        async function deleteIdea(personId, ideaId) {
+            const confirmed = await customConfirm('Remove this gift idea?');
+            if (confirmed) {
+                const friend = friends.find(f => f.id === personId);
+                if (friend) {
+                    friend.ideas = friend.ideas.filter(i => i.id !== ideaId);
+                    saveData();
+                }
+            }
+        }
+
+        async function deleteWish(e, id) {
+            if (e) e.stopPropagation();
+            const confirmed = await customConfirm('Delete this wish?');
+            if (confirmed) {
+                wishes = wishes.filter(w => w.id !== id);
+                saveData();
+            }
+        }
+
+        function formatCurrency(v) {
+            return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(v);
+        }
+
+        function render() {
+            renderWishes();
+            renderGallery();
+            renderFriends();
+            lucide.createIcons();
+        }
 
         function renderWishes() {
             ['must-haves', 'nice-to-haves', 'lucky-finds'].forEach(catId => {
-                const container = document.getElementById(`content-${catId}`), icon = document.getElementById(`icon-${catId}`);
-                if (openCategories[catId]) { container.classList.add('open'); icon.style.transform = 'rotate(180deg)'; }
-                else { container.classList.remove('open'); icon.style.transform = 'rotate(0deg)'; }
+                const container = document.getElementById(`content-${catId}`);
+                const icon = document.getElementById(`icon-${catId}`);
+                
+                if (openCategories[catId]) {
+                    container.classList.add('open');
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    container.classList.remove('open');
+                    icon.style.transform = 'rotate(0deg)';
+                }
+
                 const filtered = wishes.filter(w => !w.fulfilled && w.category === catId);
-                container.innerHTML = filtered.length ? filtered.map(w => `
+                if (filtered.length === 0) {
+                    container.innerHTML = `<p class="text-center py-4 text-slate-400 text-xs italic">No items yet</p>`;
+                    return;
+                }
+
+                container.innerHTML = filtered.map(w => `
                     <div class="bg-white/40 border border-white/20 rounded-2xl p-3 flex gap-3 shadow-sm">
                         <div class="w-16 h-16 rounded-xl overflow-hidden bg-white/60 flex-shrink-0">
-                            ${w.photo ? `<img src="${w.photo}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center placeholder-star"><i data-lucide="star" class="text-amber-400 fill-amber-400"></i></div>`}
+                            ${w.photo ? `<img src="${w.photo}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center placeholder-star"><i data-lucide="star" class="text-amber-400 w-6 h-6 fill-amber-400"></i></div>`}
                         </div>
                         <div class="flex-1 min-w-0">
                             <h3 class="font-bold text-sm truncate">${w.title}</h3>
                             <p class="text-xs font-bold text-violet-600">${w.price ? formatCurrency(w.price) : 'Priceless'}</p>
+                            ${w.notes ? `<p class="text-[10px] text-slate-500 italic mt-0.5 leading-tight line-clamp-2">${w.notes}</p>` : ''}
                             <div class="flex gap-2 mt-2">
-                                <button onclick="openFulfillModal('${w.id}')" class="text-[10px] bg-emerald-500 text-white px-2 py-1 rounded-md font-bold">Fulfilled</button>
-                                <button onclick="openWishModal('${w.id}')" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-1 rounded-md font-bold">Edit</button>
-                                ${w.link ? `<a href="${w.link}" target="_blank" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-1 rounded-md font-bold"><i data-lucide="external-link" class="w-3 h-3"></i></a>` : ''}
+                                <button onclick="openFulfillModal('${w.id}')" class="text-[10px] bg-emerald-500 text-white px-2 py-1 rounded-md font-bold active:scale-95 transition-transform">Fulfilled</button>
+                                <button onclick="openWishModal('${w.id}')" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-1 rounded-md font-bold active:scale-95 transition-transform">Edit</button>
+                                ${w.link ? `<a href="${w.link}" target="_blank" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-1 rounded-md font-bold flex items-center active:scale-95 transition-transform"><i data-lucide="external-link" class="w-3 h-3"></i></a>` : ''}
                             </div>
                         </div>
-                        <button onclick="deleteWish(event, '${w.id}')" class="p-1 text-slate-300 hover:text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="deleteWish(event, '${w.id}')" class="p-1 text-slate-300 hover:text-red-400 active:scale-90 transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
-                `).join('') : '<p class="text-center py-4 text-slate-400 text-xs italic">No items yet</p>';
+                `).join('');
             });
         }
 
         function renderGallery() {
             const container = document.getElementById('gallery-container');
             const items = wishes.filter(w => w.fulfilled);
-            container.innerHTML = items.length ? items.map(w => `
-                <div class="glass-card flex overflow-hidden">
-                    <div class="w-24 h-24 flex-shrink-0">${w.photo ? `<img src="${w.photo}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center placeholder-star"><i data-lucide="star" class="text-amber-400 fill-amber-400"></i></div>`}</div>
-                    <div class="p-3 flex-1 min-w-0 flex flex-col justify-between">
-                        <div><h3 class="font-bold text-sm truncate">${w.title}</h3><div class="flex flex-wrap gap-1 mt-1"><span class="text-[8px] font-bold bg-black/5 text-slate-600 px-1 py-0.5 rounded">${w.purchaseType || 'Gift'}</span></div></div>
-                        <div class="flex justify-between items-end"><span class="text-[10px] text-slate-400">${new Date(w.dateFulfilled).toLocaleDateString()}</span><button onclick="deleteWish(event, '${w.id}')" class="text-slate-300 hover:text-red-400"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div>
+            if (items.length === 0) {
+                container.innerHTML = `<p class="text-center py-20 text-slate-500 italic">Your granted wishes will appear here.</p>`;
+                return;
+            }
+            container.innerHTML = items.map(w => {
+                const diff = Math.ceil(Math.abs(new Date(w.dateFulfilled) - new Date(w.dateCreated)) / (1000 * 60 * 60 * 24));
+                const savings = (w.fulfillType === 'bought' && w.price > w.purchasePrice) ? w.price - w.purchasePrice : 0;
+                const methodLabel = w.purchaseType || 'Gift';
+
+                return `
+                    <div class="glass-card flex overflow-hidden">
+                        <div class="w-24 h-24 flex-shrink-0">
+                             ${w.photo ? `<img src="${w.photo}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center placeholder-star"><i data-lucide="star" class="text-amber-400 w-8 h-8 fill-amber-400"></i></div>`}
+                        </div>
+                        <div class="p-3 flex-1 min-w-0 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start">
+                                    <h3 class="font-bold text-sm truncate">${w.title}</h3>
+                                    ${w.fulfillType === 'gift' ? '<i data-lucide="gift" class="w-4 h-4 text-pink-500"></i>' : '<i data-lucide="shopping-bag" class="w-4 h-4 text-emerald-500"></i>'}
+                                </div>
+                                <div class="flex flex-wrap gap-1 mt-1.5">
+                                    <span class="text-[8px] font-bold bg-black/5 text-slate-600 px-1.5 py-0.5 rounded">${methodLabel}</span>
+                                    ${w.giftGiver ? `<span class="text-[8px] font-bold bg-pink-50 text-pink-700 px-1.5 py-0.5 rounded">From: ${w.giftGiver}</span>` : ''}
+                                    <span class="text-[8px] font-bold bg-black/5 text-slate-600 px-1.5 py-0.5 rounded">${diff}d on list</span>
+                                    ${savings > 0 ? `<span class="text-[8px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">Saved ${formatCurrency(savings)}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-end">
+                                <span class="text-[10px] text-slate-400">${new Date(w.dateFulfilled).toLocaleDateString()}</span>
+                                <button onclick="deleteWish(event, '${w.id}')" class="text-slate-300 hover:text-red-400 active:scale-90 transition-all"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            `).join('') : '<p class="text-center py-20 text-slate-500 italic">No granted wishes yet.</p>';
+                `;
+            }).join('');
         }
 
         function renderFriends() {
             const container = document.getElementById('friends-container');
-            container.innerHTML = friends.length ? friends.map(f => `
+            if (friends.length === 0) {
+                container.innerHTML = `<p class="text-center py-20 text-slate-500 italic">No people added yet.</p>`;
+                return;
+            }
+            container.innerHTML = friends.map(f => `
                 <div class="glass-card p-4 space-y-3">
-                    <div class="flex justify-between items-center border-b border-white/20 pb-2"><h3 class="font-bold text-slate-800">${f.name}</h3><div class="flex gap-2"><button onclick="openIdeaModal('${f.id}')" class="text-violet-600 text-xs font-bold">Add Idea</button><button onclick="deletePerson(event, '${f.id}')" class="text-slate-300 hover:text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>
+                    <div class="flex justify-between items-center border-b border-white/20 pb-2">
+                        <h3 class="font-bold text-slate-800">${f.name}</h3>
+                        <div class="flex gap-2">
+                            <button onclick="openIdeaModal('${f.id}')" class="text-violet-600 text-xs font-bold hover:underline active:scale-95 transition-transform">Add Idea</button>
+                            <button onclick="deletePerson(event, '${f.id}')" class="text-slate-300 hover:text-red-400 active:scale-90 transition-all">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
                     <div class="space-y-2">
-                        ${f.ideas.map(i => `<div class="flex items-center justify-between p-2 rounded-xl bg-white/30"><div class="flex items-center gap-2"><button onclick="toggleIdeaDone('${f.id}', '${i.id}')" class="w-5 h-5 rounded-full border-2 ${i.done ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300'} flex items-center justify-center">${i.done ? '<i data-lucide="check" class="w-3 h-3 text-white"></i>' : ''}</button><span class="text-sm ${i.done ? 'line-through text-slate-400' : ''}">${i.title}</span></div><button onclick="deleteIdea('${f.id}', '${i.id}')" class="text-slate-200"><i data-lucide="x" class="w-3 h-3"></i></button></div>`).join('')}
+                        ${f.ideas && f.ideas.length > 0 ? f.ideas.map(idea => `
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-white/30 group">
+                                <div class="flex items-center gap-2 min-w-0 flex-1">
+                                    <button onclick="toggleIdeaDone('${f.id}', '${idea.id}')" class="w-5 h-5 flex-shrink-0 rounded-full border-2 border-slate-300 flex items-center justify-center active:scale-90 transition-all ${idea.done ? 'bg-emerald-500 border-emerald-500' : ''}">
+                                        ${idea.done ? '<i data-lucide="check" class="w-3 h-3 text-white"></i>' : ''}
+                                    </button>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex flex-wrap items-center gap-x-2">
+                                            <span class="text-sm ${idea.done ? 'line-through text-slate-400' : 'text-slate-700'} truncate">${idea.title}</span>
+                                            ${idea.price ? `<span class="text-[10px] font-bold text-violet-600 ${idea.done ? 'opacity-50' : ''}">${formatCurrency(idea.price)}</span>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    ${idea.link ? `<a href="${idea.link}" target="_blank" class="text-slate-400 hover:text-blue-500 active:scale-90 transition-all"><i data-lucide="link" class="w-3 h-3"></i></a>` : ''}
+                                    <button onclick="deleteIdea('${f.id}', '${idea.id}')" class="text-slate-200 group-hover:text-red-400 active:scale-90 transition-all"><i data-lucide="x" class="w-3 h-3"></i></button>
+                                </div>
+                            </div>
+                        `).join('') : '<p class="text-[10px] text-slate-400 italic text-center py-1">No ideas yet</p>'}
                     </div>
                 </div>
-            `).join('') : '<p class="text-center py-20 text-slate-500 italic">Add people to plan gifts.</p>';
+            `).join('');
         }
 
-        function toggleSettings() { const s = document.getElementById('settings-modal'); if (s.classList.contains('hidden')) { s.classList.remove('hidden'); s.classList.add('flex'); } else { closeModal('settings-modal'); } }
-        function exportData() { const blob = new Blob([JSON.stringify({ wishes, friends })], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `wishlist_backup.json`; a.click(); }
-        function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { const d = JSON.parse(ev.target.result); wishes = d.wishes; friends = d.friends; saveData(); closeModal('settings-modal'); }; reader.readAsText(e.target.files[0]); }
+        function toggleSettings() {
+            const s = document.getElementById('settings-modal');
+            if (s.classList.contains('hidden')) {
+                s.classList.remove('hidden');
+                s.classList.add('flex');
+            } else {
+                closeModal('settings-modal');
+            }
+        }
+
+        function exportData() {
+            const dataToExport = { wishes, friends, version: "2.3" };
+            const blob = new Blob([JSON.stringify(dataToExport)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `wishlist_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    wishes = data.wishes || [];
+                    friends = data.friends || [];
+                    saveData();
+                    closeModal('settings-modal');
+                } catch (err) {
+                    alert("Error importing file.");
+                }
+            };
+            reader.readAsText(file);
+        }
 
         window.onload = init;
     </script>
 </body>
 </html>
+
+
