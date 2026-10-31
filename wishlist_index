@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Make a Wishlist</title>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#fbc2eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Wishlist">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --pastel-sky-top: #fbc2eb;
+            --pastel-sky-bottom: #a6c1ee;
+            --text-main: #334155;
+            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.7);
+            --input-bg: rgba(255, 255, 255, 0.65);
+        }
+
+        /* Infinite Gradient Animation */
+        @keyframes gradientMove {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 0% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        body {
+            background: linear-gradient(180deg, var(--pastel-sky-top), var(--pastel-sky-bottom), var(--pastel-sky-top));
+            background-size: 100% 400%;
+            animation: gradientMove 12s ease-in-out infinite;
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.25rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+
+        .category-header {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .category-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.2s;
+            opacity: 0;
+        }
+
+        .category-content.open {
+            max-height: 2000px;
+            opacity: 1;
+        }
+
+        input, textarea, select {
+            background: var(--input-bg) !important;
+            border: 1px solid rgba(0, 0, 0, 0.05) !important;
+            color: var(--text-main) !important;
+            appearance: none;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-color: #7c3aed !important;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 0.75rem center !important;
+            background-size: 1rem !important;
+            padding-right: 2.5rem !important;
+        }
+
+        .nav-btn.active {
+            color: #7c3aed;
+        }
+
+        .placeholder-star {
+            background: radial-gradient(circle, #fff 0%, #fef3c7 100%);
+        }
+
+        @keyframes shootingStar {
+            0% { transform: translateX(0) translateY(0); opacity: 1; }
+            70% { opacity: 1; }
+            100% { transform: translateX(-400px) translateY(400px); opacity: 0; }
+        }
+
+        .shooting-star {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: white;
+            box-shadow: 0 0 10px white;
+            z-index: -1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="star-layer" class="fixed inset-0 overflow-hidden pointer-events-none z-[-1]"></div>
+
+    <div class="max-w-md mx-auto min-h-screen flex flex-col p-5 pb-28">
+        
+        <!-- App Header -->
+        <header class="flex flex-col gap-4 mb-8 pt-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold tracking-tight text-slate-800">Make a Wishlist</h1>
+                <div class="flex gap-2">
+                    <button onclick="toggleSettings()" class="p-2 glass-card rounded-full active:scale-95 transition-transform" aria-label="Settings">
+                        <i data-lucide="settings" class="w-5 h-5 text-slate-600"></i>
+                    </button>
+                </div>
+            </div>
+            <button id="btn-make-wish" onclick="openWishModal()" class="w-full glass-card py-4 flex items-center justify-center gap-2 font-bold text-violet-600 hover:bg-white/50 active:scale-[0.98] transition-all">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                Make a Wish
+            </button>
+        </header>
+
+        <!-- Wishes Tab -->
+        <section id="tab-wishes" class="tab-content active space-y-4">
+            <div class="glass-card overflow-hidden">
+                <div onclick="toggleAccordion('must-haves')" class="category-header p-5 flex justify-between items-center">
+                    <div>
+                        <h2 class="font-bold text-lg">Must-haves</h2>
+                        <p class="text-xs text-slate-500">Buy when the time is right</p>
+                    </div>
+                    <i data-lucide="chevron-down" id="icon-must-haves" class="transition-transform"></i>
+                </div>
+                <div id="content-must-haves" class="category-content px-4 pb-4 space-y-3"></div>
+            </div>
+
+            <div class="glass-card overflow-hidden">
+                <div onclick="toggleAccordion('nice-to-haves')" class="category-header p-5 flex justify-between items-center">
+                    <div>
+                        <h2 class="font-bold text-lg">Nice-to-haves</h2>
+                        <p class="text-xs text-slate-500">Treat-yourself moments</p>
+                    </div>
+                    <i data-lucide="chevron-down" id="icon-nice-to-haves" class="transition-transform"></i>
+                </div>
+                <div id="content-nice-to-haves" class="category-content px-4 pb-4 space-y-3"></div>
+            </div>
+
+            <div class="glass-card overflow-hidden">
+                <div onclick="toggleAccordion('lucky-finds')" class="category-header p-5 flex justify-between items-center">
+                    <div>
+                        <h2 class="font-bold text-lg">Lucky finds</h2>
+                        <p class="text-xs text-slate-500">Keep an eye out</p>
+                    </div>
+                    <i data-lucide="chevron-down" id="icon-lucky-finds" class="transition-transform"></i>
+                </div>
+                <div id="content-lucky-finds" class="category-content px-4 pb-4 space-y-3"></div>
+            </div>
+        </section>
+
+        <!-- Gallery / Granted Wishes Tab -->
+        <section id="tab-gallery" class="tab-content hidden">
+            <!-- Total Saved Indicator -->
+            <div id="total-saved-badge" class="glass-card px-4 py-3 mb-4 flex justify-between items-center text-sm font-bold text-emerald-700">
+                <span class="flex items-center gap-2">
+                    <i data-lucide="piggy-bank" class="w-5 h-5 text-emerald-600"></i>
+                    Total Saved
+                </span>
+                <span id="total-saved-amount" class="text-base text-emerald-600">0,00 €</span>
+            </div>
+
+            <h2 class="text-xl font-bold mb-4 px-1 text-slate-800">Granted Wishes</h2>
+            <div id="gallery-container" class="space-y-4"></div>
+        </section>
+
+        <!-- Gifting / Friends Tab -->
+        <section id="tab-friends" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-4 px-1">
+                <h2 class="text-xl font-bold text-slate-800">Gifting</h2>
+                <button onclick="openFriendModal()" class="p-2 bg-violet-500 text-white rounded-xl text-sm font-bold shadow-sm flex items-center gap-1 active:scale-95 transition-transform">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> Add Person
+                </button>
+            </div>
+            <div id="friends-container" class="space-y-4"></div>
+        </section>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-6 left-6 right-6 glass-card p-2 flex justify-around items-center z-50">
+        <button onclick="switchTab('wishes')" class="nav-btn active flex flex-col items-center p-2" id="nav-wishes">
+            <i data-lucide="stars" class="w-6 h-6"></i>
+            <span class="text-[10px] mt-1 font-medium">Wishes</span>
+        </button>
+        <button onclick="switchTab('gallery')" class="nav-btn flex flex-col items-center p-2" id="nav-gallery">
+            <i data-lucide="layout-grid" class="w-6 h-6"></i>
+            <span class="text-[10px] mt-1 font-medium">Gallery</span>
+        </button>
+        <button onclick="switchTab('friends')" class="nav-btn flex flex-col items-center p-2" id="nav-friends">
+            <i data-lucide="gift" class="w-6 h-6"></i>
+            <span class="text-[10px] mt-1 font-medium">Gifting</span>
+        </button>
+    </nav>
+
+    <!-- Create/Edit Wish Modal -->
+    <div id="wish-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
+        <div class="glass-card w-full max-w-sm p-6 overflow-y-auto max-h-[90vh] relative shadow-2xl">
+            <button onclick="closeModal('wish-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 id="modal-title" class="text-xl font-bold mb-6 text-slate-800">Make a Wish</h3>
+            <form id="wish-form" class="space-y-4">
+                <input type="hidden" id="edit-id">
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Photo</label>
+                    <div class="flex items-center gap-3">
+                        <label class="flex-1 cursor-pointer">
+                            <div class="w-full p-3 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center gap-2 text-slate-500 text-sm bg-white/30">
+                                <i data-lucide="image" class="w-4 h-4"></i> Choose Image
+                            </div>
+                            <input type="file" id="wish-image-input" accept="image/*" class="hidden" onchange="handleImagePreview(event)">
+                        </label>
+                        <div id="image-preview" class="w-12 h-12 rounded-xl overflow-hidden bg-white/50 border border-slate-200 hidden"></div>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Title</label>
+                    <input type="text" id="wish-title" required class="w-full p-3 rounded-xl outline-none">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Category</label>
+                    <select id="wish-category" class="w-full p-3 rounded-xl outline-none">
+                        <option value="must-haves">Must-have</option>
+                        <option value="nice-to-haves">Nice-to-have</option>
+                        <option value="lucky-finds">Lucky find</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Target Price (€)</label>
+                        <input type="number" id="wish-price" step="0.01" class="w-full p-3 rounded-xl outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Link</label>
+                        <input type="url" id="wish-link" placeholder="https://" class="w-full p-3 rounded-xl outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Comments</label>
+                    <textarea id="wish-notes" class="w-full p-3 rounded-xl outline-none h-20 resize-none"></textarea>
+                </div>
+                <button type="submit" class="w-full p-4 rounded-xl bg-violet-600 text-white font-bold shadow-lg shadow-violet-200 mt-2 hover:bg-violet-700 transition-colors">Save Wish</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Fulfill & Edit Granted Wish Modal -->
+    <div id="fulfill-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
+        <div class="glass-card w-full max-w-sm p-6 relative overflow-y-auto max-h-[90vh]">
+            <button onclick="closeModal('fulfill-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 id="fulfill-modal-title" class="text-xl font-bold mb-6 text-slate-800">Wish Fulfilled!</h3>
+            <div class="space-y-4">
+                
+                <!-- Image Upload in Fulfill/Edit Modal -->
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Photo</label>
+                    <div class="flex items-center gap-3">
+                        <label class="flex-1 cursor-pointer">
+                            <div class="w-full p-3 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center gap-2 text-slate-500 text-sm bg-white/30">
+                                <i data-lucide="image" class="w-4 h-4"></i> Choose Image
+                            </div>
+                            <input type="file" id="fulfill-image-input" accept="image/*" class="hidden" onchange="handleFulfillImagePreview(event)">
+                        </label>
+                        <div id="fulfill-image-preview" class="w-12 h-12 rounded-xl overflow-hidden bg-white/50 border border-slate-200 hidden"></div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="setFulfillType('bought')" id="btn-bought" class="flex-1 p-3 rounded-xl border-2 border-violet-500 bg-violet-50 flex flex-col items-center gap-1 transition-all">
+                        <i data-lucide="shopping-cart" class="w-5 h-5 text-violet-600"></i>
+                        <span class="text-xs font-bold text-violet-600">Purchased</span>
+                    </button>
+                    <button onclick="setFulfillType('gift')" id="btn-gift" class="flex-1 p-3 rounded-xl border-2 border-transparent bg-white/50 flex flex-col items-center gap-1 transition-all">
+                        <i data-lucide="gift" class="w-5 h-5 text-slate-400"></i>
+                        <span class="text-xs font-bold text-slate-500">Gift</span>
+                    </button>
+                </div>
+                
+                <div id="purchase-details" class="space-y-3">
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Method</label>
+                        <select id="purchase-type" class="w-full p-3 rounded-xl outline-none">
+                            <option value="Retail">Retail</option>
+                            <option value="On Sale">On Sale</option>
+                            <option value="Secondhand">Secondhand</option>
+                            <option value="Dupe">Dupe</option>
+                            <option value="DIY Project">DIY Project</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Final Price (€)</label>
+                        <input type="number" id="purchase-price" step="0.01" class="w-full p-3 rounded-xl outline-none">
+                    </div>
+                </div>
+
+                <div id="gift-details" class="space-y-3 hidden">
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Gifted By</label>
+                        <input type="text" id="gift-giver" placeholder="e.g. Mom" class="w-full p-3 rounded-xl outline-none">
+                    </div>
+                </div>
+
+                <button onclick="confirmFulfillment()" class="w-full p-4 rounded-xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-100 mt-2 hover:bg-emerald-700 transition-colors">Save Details</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Friend Modal -->
+    <div id="friend-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
+        <div class="glass-card w-full max-w-sm p-6 relative">
+            <button onclick="closeModal('friend-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-xl font-bold mb-6 text-slate-800">Add Person</h3>
+            <form id="friend-form" class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Name</label>
+                    <input type="text" id="friend-name" required class="w-full p-3 rounded-xl outline-none" placeholder="e.g. Sarah">
+                </div>
+                <button type="submit" class="w-full p-4 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-100 mt-2 hover:bg-blue-700 transition-colors">Save Person</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Gift Idea Modal -->
+    <div id="idea-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
+        <div class="glass-card w-full max-w-sm p-6 relative">
+            <button onclick="closeModal('idea-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-xl font-bold mb-6 text-slate-800">New Gift Idea</h3>
+            <form id="idea-form" class="space-y-4">
+                <input type="hidden" id="idea-person-id">
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">What</label>
+                    <input type="text" id="idea-title" required class="w-full p-3 rounded-xl outline-none" placeholder="Item name">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Price (€)</label>
+                        <input type="number" id="idea-price" step="0.01" class="w-full p-3 rounded-xl outline-none" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Link</label>
+                        <input type="url" id="idea-link" placeholder="https://" class="w-full p-3 rounded-xl outline-none">
+                    </div>
+                </div>
+                <button type="submit" class="w-full p-4 rounded-xl bg-violet-600 text-white font-bold shadow-lg shadow-violet-100 mt-2 hover:bg-violet-700 transition-colors">Add Idea</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/20 backdrop-blur-md z-[200] hidden items-center justify-center p-6">
+        <div class="glass-card w-full max-w-[280px] p-6 text-center shadow-2xl scale-95 transition-transform" id="confirm-box">
+            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <h4 class="font-bold text-slate-800 mb-2">Are you sure?</h4>
+            <p id="confirm-message" class="text-xs text-slate-500 mb-6 leading-relaxed">This action cannot be undone.</p>
+            <div class="grid grid-cols-2 gap-3">
+                <button id="confirm-cancel" class="p-3 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold active:scale-95 transition-transform">Cancel</button>
+                <button id="confirm-ok" class="p-3 rounded-xl bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-200 active:scale-95 transition-transform">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
+        <div class="glass-card w-full max-w-sm p-6 relative">
+            <button onclick="closeModal('settings-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-xl font-bold mb-6 text-slate-800">Settings</h3>
+            <div class="space-y-3">
+                <button onclick="exportData()" class="w-full p-4 rounded-xl bg-white/50 flex items-center justify-between font-medium hover:bg-white/70 transition-colors">
+                    <span>Backup Everything</span>
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                </button>
+                <label class="w-full p-4 rounded-xl bg-white/50 flex items-center justify-between cursor-pointer font-medium hover:bg-white/70 transition-colors">
+                    <span>Import Data</span>
+                    <i data-lucide="upload" class="w-4 h-4"></i>
+                    <input type="file" id="import-file" class="hidden" onchange="importData(event)">
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Register Service Worker if supported
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
+
+        let wishes = JSON.parse(localStorage.getItem('wishes')) || [];
+        let friends = JSON.parse(localStorage.getItem('friends')) || [];
+        
+        let openCategories = { 'must-haves': false, 'nice-to-haves': false, 'lucky-finds': false };
+        let currentTab = 'wishes';
+        let fulfillTargetId = null;
+        let fulfillType = 'bought';
+        let tempImageData = null;
+        let fulfillTempImageData = null;
+
+        function init() {
+            lucide.createIcons();
+            createShootingStars();
+            render();
+        }
+
+        function resizeImage(dataURL, maxWidth = 800) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth || height > maxWidth) {
+                        if (width > height) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        } else {
+                            width *= maxWidth / height;
+                            height = maxWidth;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+                img.src = dataURL;
+            });
+        }
+
+        function customConfirm(message) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('confirm-modal');
+                const box = document.getElementById('confirm-box');
+                document.getElementById('confirm-message').innerText = message;
+                
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => box.classList.remove('scale-95'), 10);
+
+                const cleanup = (val) => {
+                    box.classList.add('scale-95');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                    }, 150);
+                    resolve(val);
+                };
+
+                document.getElementById('confirm-ok').onclick = () => cleanup(true);
+                document.getElementById('confirm-cancel').onclick = () => cleanup(false);
+            });
+        }
+
+        function createShootingStars() {
+            const layer = document.getElementById('star-layer');
+            setInterval(() => {
+                const s = document.createElement('div');
+                s.className = 'shooting-star';
+                s.style.top = Math.random() * 50 + '%';
+                s.style.right = '0';
+                s.style.animation = `shootingStar ${Math.random() * 2 + 1}s linear forwards`;
+                layer.appendChild(s);
+                setTimeout(() => s.remove(), 3000);
+            }, 5000);
+        }
+
+        function saveData() {
+            localStorage.setItem('wishes', JSON.stringify(wishes));
+            localStorage.setItem('friends', JSON.stringify(friends));
+            render();
+        }
+
+        function switchTab(tabId) {
+            currentTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            const wishBtn = document.getElementById('btn-make-wish');
+            if (tabId === 'wishes') {
+                wishBtn.classList.remove('hidden');
+                wishBtn.classList.add('flex');
+            } else {
+                wishBtn.classList.add('hidden');
+                wishBtn.classList.remove('flex');
+            }
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabId}`).classList.add('active');
+            render();
+        }
+
+        function toggleAccordion(id) {
+            openCategories[id] = !openCategories[id];
+            render();
+        }
+
+        function openWishModal(id = null) {
+            const modal = document.getElementById('wish-modal');
+            const form = document.getElementById('wish-form');
+            form.reset();
+            tempImageData = null;
+            document.getElementById('image-preview').innerHTML = '';
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('edit-id').value = id || '';
+            document.getElementById('modal-title').innerText = id ? 'Edit Wish' : 'Make a Wish';
+
+            if (id) {
+                const wish = wishes.find(w => w.id === id);
+                document.getElementById('wish-title').value = wish.title;
+                document.getElementById('wish-category').value = wish.category;
+                document.getElementById('wish-price').value = wish.price || '';
+                document.getElementById('wish-link').value = wish.link || '';
+                document.getElementById('wish-notes').value = wish.notes || '';
+                if (wish.photo) {
+                    tempImageData = wish.photo;
+                    updateImagePreview(wish.photo);
+                }
+            }
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById(id).classList.remove('flex');
+        }
+
+        async function handleImagePreview(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                tempImageData = await resizeImage(event.target.result);
+                updateImagePreview(tempImageData);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateImagePreview(src) {
+            const preview = document.getElementById('image-preview');
+            preview.innerHTML = `<img src="${src}" class="w-full h-full object-cover">`;
+            preview.classList.remove('hidden');
+        }
+
+        async function handleFulfillImagePreview(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                fulfillTempImageData = await resizeImage(event.target.result);
+                updateFulfillImagePreview(fulfillTempImageData);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateFulfillImagePreview(src) {
+            const preview = document.getElementById('fulfill-image-preview');
+            if (src) {
+                preview.innerHTML = `<img src="${src}" class="w-full h-full object-cover">`;
+                preview.classList.remove('hidden');
+            } else {
+                preview.innerHTML = '';
+                preview.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('wish-form').onsubmit = (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const data = {
+                title: document.getElementById('wish-title').value,
+                category: document.getElementById('wish-category').value,
+                price: parseFloat(document.getElementById('wish-price').value) || 0,
+                photo: tempImageData,
+                link: document.getElementById('wish-link').value,
+                notes: document.getElementById('wish-notes').value,
+                fulfilled: false,
+                dateCreated: id ? wishes.find(w => w.id === id).dateCreated : new Date().toISOString()
+            };
+
+            if (id) {
+                const index = wishes.findIndex(w => w.id === id);
+                wishes[index] = { ...wishes[index], ...data };
+            } else {
+                data.id = Date.now().toString();
+                wishes.unshift(data);
+            }
+            saveData();
+            closeModal('wish-modal');
+        };
+
+        function openFulfillModal(id) {
+            fulfillTargetId = id;
+            const wish = wishes.find(w => w.id === id);
+            if (!wish) return;
+
+            fulfillTempImageData = wish.photo || null;
+            updateFulfillImagePreview(fulfillTempImageData);
+
+            const type = wish.fulfillType || 'bought';
+            setFulfillType(type);
+
+            if (type === 'bought') {
+                document.getElementById('purchase-type').value = wish.purchaseType || 'Retail';
+                document.getElementById('purchase-price').value = wish.purchasePrice !== undefined ? wish.purchasePrice : (wish.price || '');
+                document.getElementById('gift-giver').value = '';
+            } else {
+                document.getElementById('gift-giver').value = wish.giftGiver || '';
+                document.getElementById('purchase-price').value = '';
+            }
+
+            const titleEl = document.getElementById('fulfill-modal-title');
+            if (titleEl) {
+                titleEl.innerText = wish.fulfilled ? 'Edit Granted Wish' : 'Wish Fulfilled!';
+            }
+
+            const modal = document.getElementById('fulfill-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function setFulfillType(type) {
+            fulfillType = type;
+            const btnB = document.getElementById('btn-bought');
+            const btnG = document.getElementById('btn-gift');
+            const purchaseDetails = document.getElementById('purchase-details');
+            const giftDetails = document.getElementById('gift-details');
+
+            if (type === 'bought') {
+                btnB.classList.add('border-violet-500', 'bg-violet-50');
+                btnG.classList.remove('border-violet-500', 'bg-violet-50');
+                purchaseDetails.classList.remove('hidden');
+                giftDetails.classList.add('hidden');
+            } else {
+                btnG.classList.add('border-violet-500', 'bg-violet-50');
+                btnB.classList.remove('border-violet-500', 'bg-violet-50');
+                purchaseDetails.classList.add('hidden');
+                giftDetails.classList.remove('hidden');
+            }
+        }
+
+        function confirmFulfillment() {
+            const wish = wishes.find(w => w.id === fulfillTargetId);
+            if (!wish) return;
+
+            wish.fulfilled = true;
+            if (!wish.dateFulfilled) {
+                wish.dateFulfilled = new Date().toISOString();
+            }
+            wish.fulfillType = fulfillType;
+            wish.photo = fulfillTempImageData;
+
+            if (fulfillType === 'bought') {
+                wish.purchaseType = document.getElementById('purchase-type').value;
+                wish.purchasePrice = parseFloat(document.getElementById('purchase-price').value) || 0;
+                wish.giftGiver = null;
+            } else {
+                wish.purchaseType = 'Gift';
+                wish.purchasePrice = 0;
+                wish.giftGiver = document.getElementById('gift-giver').value || null;
+            }
+
+            saveData();
+            closeModal('fulfill-modal');
+        }
+
+        function openFriendModal() {
+            document.getElementById('friend-form').reset();
+            const modal = document.getElementById('friend-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        document.getElementById('friend-form').onsubmit = (e) => {
+            e.preventDefault();
+            friends.push({
+                id: Date.now().toString(),
+                name: document.getElementById('friend-name').value,
+                ideas: []
+            });
+            saveData();
+            closeModal('friend-modal');
+        };
+
+        async function deletePerson(e, id) {
+            if (e) e.stopPropagation();
+            const confirmed = await customConfirm('Delete this person and all their gift ideas?');
+            if (confirmed) {
+                friends = friends.filter(f => f.id !== id);
+                saveData();
+            }
+        }
+
+        function openIdeaModal(personId) {
+            document.getElementById('idea-form').reset();
+            document.getElementById('idea-person-id').value = personId;
+            const modal = document.getElementById('idea-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        document.getElementById('idea-form').onsubmit = (e) => {
+            e.preventDefault();
+            const personId = document.getElementById('idea-person-id').value;
+            const friend = friends.find(f => f.id === personId);
+            if (friend) {
+                friend.ideas.push({
+                    id: Date.now().toString(),
+                    title: document.getElementById('idea-title').value,
+                    price: parseFloat(document.getElementById('idea-price').value) || 0,
+                    link: document.getElementById('idea-link').value,
+                    done: false
+                });
+                saveData();
+            }
+            closeModal('idea-modal');
+        };
+
+        function toggleIdeaDone(personId, ideaId) {
+            const friend = friends.find(f => f.id === personId);
+            if (friend) {
+                const idea = friend.ideas.find(i => i.id === ideaId);
+                if (idea) idea.done = !idea.done;
+                saveData();
+            }
+        }
+
+        async function deleteIdea(personId, ideaId) {
+            const confirmed = await customConfirm('Remove this gift idea?');
+            if (confirmed) {
+                const friend = friends.find(f => f.id === personId);
+                if (friend) {
+                    friend.ideas = friend.ideas.filter(i => i.id !== ideaId);
+                    saveData();
+                }
+            }
+        }
+
+        async function deleteWish(e, id) {
+            if (e) e.stopPropagation();
+            const confirmed = await customConfirm('Delete this wish?');
+            if (confirmed) {
+                wishes = wishes.filter(w => w.id !== id);
+                saveData();
+            }
+        }
+
+        function formatCurrency(v) {
+            return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(v);
+        }
+
+        function render() {
+            renderWishes();
+            renderGallery();
+            renderFriends();
+            lucide.createIcons();
+        }
+
+        function renderWishes() {
+            ['must-haves', 'nice-to-haves', 'lucky-finds'].forEach(catId => {
+                const container = document.getElementById(`content-${catId}`);
+                const icon = document.getElementById(`icon-${catId}`);
+                
+                if (openCategories[catId]) {
+                    container.classList.add('open');
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    container.classList.remove('open');
+                    icon.style.transform = 'rotate(0deg)';
+                }
+
+                const filtered = wishes.filter(w => !w.fulfilled && w.category === catId);
+                if (filtered.length === 0) {
+                    container.innerHTML = `<p class="text-center py-4 text-slate-400 text-xs italic">No items yet</p>`;
+                    return;
+                }
+
+                container.innerHTML = filtered.map(w => `
+                    <div class="bg-white/40 border border-white/20 rounded-2xl p-3 flex gap-3 shadow-sm">
+                        <div class="w-16 h-16 rounded-xl overflow-hidden bg-white/60 flex-shrink-0">
+                            ${w.photo ? `<img src="${w.photo}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center placeholder-star"><i data-lucide="star" class="text-amber-400 w-6 h-6 fill-amber-400"></i></div>`}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-sm truncate">${w.title}</h3>
+                            <p class="text-xs font-bold text-violet-600">${w.price ? formatCurrency(w.price) : 'Priceless'}</p>
+                            ${w.notes ? `<p class="text-[10px] text-slate-500 italic mt-0.5 leading-tight line-clamp-2">${w.notes}</p>` : ''}
+                            <div class="flex gap-2 mt-2">
+                                <button onclick="openFulfillModal('${w.id}')" class="text-[10px] bg-emerald-500 text-white px-2 py-1 rounded-md font-bold active:scale-95 transition-transform">Fulfilled</button>
+                                <button onclick="openWishModal('${w.id}')" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-1 rounded-md font-bold active:scale-95 transition-transform">Edit</button>
+                                ${w.link ? `<a href="${w.link}" target="_blank" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-1 rounded-md font-bold flex items-center active:scale-95 transition-transform"><i data-lucide="external-link" class="w-3 h-3"></i></a>` : ''}
+                            </div>
+                        </div>
+                        <button onclick="deleteWish(event, '${w.id}')" class="p-1 text-slate-300 hover:text-red-400 active:scale-90 transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function renderGallery() {
+            const container = document.getElementById('gallery-container');
+            const items = wishes.filter(w => w.fulfilled);
+
+            // Calculate Total Saved
+            const totalSavings = items.reduce((sum, w) => {
+                if (w.fulfillType === 'bought' && w.price && w.purchasePrice !== undefined && w.price > w.purchasePrice) {
+                    return sum + (w.price - w.purchasePrice);
+                }
+                return sum;
+            }, 0);
+
+            const savedAmountEl = document.getElementById('total-saved-amount');
+            if (savedAmountEl) {
+                savedAmountEl.innerText = formatCurrency(totalSavings);
+            }
+
+            if (items.length === 0) {
+                container.innerHTML = `<p class="text-center py-20 text-slate-500 italic">Your granted wishes will appear here.</p>`;
+                return;
+            }
+            container.innerHTML = items.map(w => {
+                const diff = Math.ceil(Math.abs(new Date(w.dateFulfilled) - new Date(w.dateCreated)) / (1000 * 60 * 60 * 24));
+                const savings = (w.fulfillType === 'bought' && w.price > w.purchasePrice) ? w.price - w.purchasePrice : 0;
+                const methodLabel = w.purchaseType || 'Gift';
+
+                return `
+                    <div class="glass-card flex overflow-hidden">
+                        <div class="w-24 h-24 flex-shrink-0">
+                             ${w.photo ? `<img src="${w.photo}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center placeholder-star"><i data-lucide="star" class="text-amber-400 w-8 h-8 fill-amber-400"></i></div>`}
+                        </div>
+                        <div class="p-3 flex-1 min-w-0 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start">
+                                    <h3 class="font-bold text-sm truncate">${w.title}</h3>
+                                    ${w.fulfillType === 'gift' ? '<i data-lucide="gift" class="w-4 h-4 text-pink-500"></i>' : '<i data-lucide="shopping-bag" class="w-4 h-4 text-emerald-500"></i>'}
+                                </div>
+                                <div class="flex flex-wrap gap-1 mt-1.5">
+                                    <span class="text-[8px] font-bold bg-black/5 text-slate-600 px-1.5 py-0.5 rounded">${methodLabel}</span>
+                                    ${w.giftGiver ? `<span class="text-[8px] font-bold bg-pink-50 text-pink-700 px-1.5 py-0.5 rounded">From: ${w.giftGiver}</span>` : ''}
+                                    <span class="text-[8px] font-bold bg-black/5 text-slate-600 px-1.5 py-0.5 rounded">${diff}d on list</span>
+                                    ${savings > 0 ? `<span class="text-[8px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">Saved ${formatCurrency(savings)}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-end mt-2">
+                                <span class="text-[10px] text-slate-400">${new Date(w.dateFulfilled).toLocaleDateString()}</span>
+                                <div class="flex gap-2 items-center">
+                                    <button onclick="openFulfillModal('${w.id}')" class="text-[10px] bg-slate-200 text-slate-600 px-2.5 py-1 rounded-md font-bold active:scale-95 transition-transform">Edit</button>
+                                    <button onclick="deleteWish(event, '${w.id}')" class="text-slate-300 hover:text-red-400 active:scale-90 transition-all"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderFriends() {
+            const container = document.getElementById('friends-container');
+            if (friends.length === 0) {
+                container.innerHTML = `<p class="text-center py-20 text-slate-500 italic">No people added yet.</p>`;
+                return;
+            }
+            container.innerHTML = friends.map(f => `
+                <div class="glass-card p-4 space-y-3">
+                    <div class="flex justify-between items-center border-b border-white/20 pb-2">
+                        <h3 class="font-bold text-slate-800">${f.name}</h3>
+                        <div class="flex gap-2">
+                            <button onclick="openIdeaModal('${f.id}')" class="text-violet-600 text-xs font-bold hover:underline active:scale-95 transition-transform">Add Idea</button>
+                            <button onclick="deletePerson(event, '${f.id}')" class="text-slate-300 hover:text-red-400 active:scale-90 transition-all">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        ${f.ideas && f.ideas.length > 0 ? f.ideas.map(idea => `
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-white/30 group">
+                                <div class="flex items-center gap-2 min-w-0 flex-1">
+                                    <button onclick="toggleIdeaDone('${f.id}', '${idea.id}')" class="w-5 h-5 flex-shrink-0 rounded-full border-2 border-slate-300 flex items-center justify-center active:scale-90 transition-all ${idea.done ? 'bg-emerald-500 border-emerald-500' : ''}">
+                                        ${idea.done ? '<i data-lucide="check" class="w-3 h-3 text-white"></i>' : ''}
+                                    </button>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex flex-wrap items-center gap-x-2">
+                                            <span class="text-sm ${idea.done ? 'line-through text-slate-400' : 'text-slate-700'} truncate">${idea.title}</span>
+                                            ${idea.price ? `<span class="text-[10px] font-bold text-violet-600 ${idea.done ? 'opacity-50' : ''}">${formatCurrency(idea.price)}</span>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    ${idea.link ? `<a href="${idea.link}" target="_blank" class="text-slate-400 hover:text-blue-500 active:scale-90 transition-all"><i data-lucide="link" class="w-3 h-3"></i></a>` : ''}
+                                    <button onclick="deleteIdea('${f.id}', '${idea.id}')" class="text-slate-200 group-hover:text-red-400 active:scale-90 transition-all"><i data-lucide="x" class="w-3 h-3"></i></button>
+                                </div>
+                            </div>
+                        `).join('') : '<p class="text-[10px] text-slate-400 italic text-center py-1">No ideas yet</p>'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleSettings() {
+            const s = document.getElementById('settings-modal');
+            if (s.classList.contains('hidden')) {
+                s.classList.remove('hidden');
+                s.classList.add('flex');
+            } else {
+                closeModal('settings-modal');
+            }
+        }
+
+        function exportData() {
+            const dataToExport = { wishes, friends, version: "2.5" };
+            const blob = new Blob([JSON.stringify(dataToExport)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `wishlist_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    wishes = data.wishes || [];
+                    friends = data.friends || [];
+                    saveData();
+                    closeModal('settings-modal');
+                } catch (err) {
+                    alert("Error importing file.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
