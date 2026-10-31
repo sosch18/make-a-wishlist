@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Make a Wishlist</title>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#fbc2eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Wishlist">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -91,9 +101,9 @@
         }
 
         @keyframes shootingStar {
-            0% { transform: translateX(0) translateY(0) opacity: 1; }
+            0% { transform: translateX(0) translateY(0); opacity: 1; }
             70% { opacity: 1; }
-            100% { transform: translateX(-400px) translateY(400px) opacity: 0; }
+            100% { transform: translateX(-400px) translateY(400px); opacity: 0; }
         }
 
         .shooting-star {
@@ -113,11 +123,12 @@
 
     <div class="max-w-md mx-auto min-h-screen flex flex-col p-5 pb-28">
         
+        <!-- App Header -->
         <header class="flex flex-col gap-4 mb-8 pt-4">
             <div class="flex justify-between items-center">
                 <h1 class="text-2xl font-bold tracking-tight text-slate-800">Make a Wishlist</h1>
                 <div class="flex gap-2">
-                    <button onclick="toggleSettings()" class="p-2 glass-card rounded-full active:scale-95 transition-transform">
+                    <button onclick="toggleSettings()" class="p-2 glass-card rounded-full active:scale-95 transition-transform" aria-label="Settings">
                         <i data-lucide="settings" class="w-5 h-5 text-slate-600"></i>
                     </button>
                 </div>
@@ -128,6 +139,7 @@
             </button>
         </header>
 
+        <!-- Wishes Tab -->
         <section id="tab-wishes" class="tab-content active space-y-4">
             <div class="glass-card overflow-hidden">
                 <div onclick="toggleAccordion('must-haves')" class="category-header p-5 flex justify-between items-center">
@@ -163,11 +175,22 @@
             </div>
         </section>
 
+        <!-- Gallery / Granted Wishes Tab -->
         <section id="tab-gallery" class="tab-content hidden">
+            <!-- Total Saved Indicator -->
+            <div id="total-saved-badge" class="glass-card px-4 py-3 mb-4 flex justify-between items-center text-sm font-bold text-emerald-700">
+                <span class="flex items-center gap-2">
+                    <i data-lucide="piggy-bank" class="w-5 h-5 text-emerald-600"></i>
+                    Total Saved
+                </span>
+                <span id="total-saved-amount" class="text-base text-emerald-600">0,00 €</span>
+            </div>
+
             <h2 class="text-xl font-bold mb-4 px-1 text-slate-800">Granted Wishes</h2>
             <div id="gallery-container" class="space-y-4"></div>
         </section>
 
+        <!-- Gifting / Friends Tab -->
         <section id="tab-friends" class="tab-content hidden">
             <div class="flex justify-between items-center mb-4 px-1">
                 <h2 class="text-xl font-bold text-slate-800">Gifting</h2>
@@ -179,6 +202,7 @@
         </section>
     </div>
 
+    <!-- Bottom Navigation Bar -->
     <nav class="fixed bottom-6 left-6 right-6 glass-card p-2 flex justify-around items-center z-50">
         <button onclick="switchTab('wishes')" class="nav-btn active flex flex-col items-center p-2" id="nav-wishes">
             <i data-lucide="stars" class="w-6 h-6"></i>
@@ -194,7 +218,7 @@
         </button>
     </nav>
 
-    <!-- Modals -->
+    <!-- Create/Edit Wish Modal -->
     <div id="wish-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
         <div class="glass-card w-full max-w-sm p-6 overflow-y-auto max-h-[90vh] relative shadow-2xl">
             <button onclick="closeModal('wish-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
@@ -246,13 +270,29 @@
         </div>
     </div>
 
+    <!-- Fulfill & Edit Granted Wish Modal -->
     <div id="fulfill-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
-        <div class="glass-card w-full max-w-sm p-6 relative">
+        <div class="glass-card w-full max-w-sm p-6 relative overflow-y-auto max-h-[90vh]">
             <button onclick="closeModal('fulfill-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
-            <h3 class="text-xl font-bold mb-6 text-slate-800">Wish Fulfilled!</h3>
+            <h3 id="fulfill-modal-title" class="text-xl font-bold mb-6 text-slate-800">Wish Fulfilled!</h3>
             <div class="space-y-4">
+                
+                <!-- Image Upload in Fulfill/Edit Modal -->
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Photo</label>
+                    <div class="flex items-center gap-3">
+                        <label class="flex-1 cursor-pointer">
+                            <div class="w-full p-3 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center gap-2 text-slate-500 text-sm bg-white/30">
+                                <i data-lucide="image" class="w-4 h-4"></i> Choose Image
+                            </div>
+                            <input type="file" id="fulfill-image-input" accept="image/*" class="hidden" onchange="handleFulfillImagePreview(event)">
+                        </label>
+                        <div id="fulfill-image-preview" class="w-12 h-12 rounded-xl overflow-hidden bg-white/50 border border-slate-200 hidden"></div>
+                    </div>
+                </div>
+
                 <div class="flex gap-3">
                     <button onclick="setFulfillType('bought')" id="btn-bought" class="flex-1 p-3 rounded-xl border-2 border-violet-500 bg-violet-50 flex flex-col items-center gap-1 transition-all">
                         <i data-lucide="shopping-cart" class="w-5 h-5 text-violet-600"></i>
@@ -288,11 +328,12 @@
                     </div>
                 </div>
 
-                <button onclick="confirmFulfillment()" class="w-full p-4 rounded-xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-100 mt-2 hover:bg-emerald-700 transition-colors">Confirm</button>
+                <button onclick="confirmFulfillment()" class="w-full p-4 rounded-xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-100 mt-2 hover:bg-emerald-700 transition-colors">Save Details</button>
             </div>
         </div>
     </div>
 
+    <!-- Friend Modal -->
     <div id="friend-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
         <div class="glass-card w-full max-w-sm p-6 relative">
             <button onclick="closeModal('friend-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
@@ -309,6 +350,7 @@
         </div>
     </div>
 
+    <!-- Gift Idea Modal -->
     <div id="idea-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
         <div class="glass-card w-full max-w-sm p-6 relative">
             <button onclick="closeModal('idea-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
@@ -336,6 +378,7 @@
         </div>
     </div>
 
+    <!-- Confirmation Modal -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/20 backdrop-blur-md z-[200] hidden items-center justify-center p-6">
         <div class="glass-card w-full max-w-[280px] p-6 text-center shadow-2xl scale-95 transition-transform" id="confirm-box">
             <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -350,6 +393,7 @@
         </div>
     </div>
 
+    <!-- Settings Modal -->
     <div id="settings-modal" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
         <div class="glass-card w-full max-w-sm p-6 relative">
             <button onclick="closeModal('settings-modal')" class="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 text-slate-500">
@@ -371,16 +415,22 @@
     </div>
 
     <script>
+        // Register Service Worker if supported
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
+
         let wishes = JSON.parse(localStorage.getItem('wishes')) || [];
         let friends = JSON.parse(localStorage.getItem('friends')) || [];
         
-        // Wishlists are always collapsed by default (all false)
         let openCategories = { 'must-haves': false, 'nice-to-haves': false, 'lucky-finds': false };
-        
         let currentTab = 'wishes';
         let fulfillTargetId = null;
         let fulfillType = 'bought';
         let tempImageData = null;
+        let fulfillTempImageData = null;
 
         function init() {
             lucide.createIcons();
@@ -388,7 +438,6 @@
             render();
         }
 
-        // Canvas Image Resizer Implementation
         function resizeImage(dataURL, maxWidth = 800) {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -411,7 +460,6 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    // Compress to JPEG to save significantly more space than PNG
                     resolve(canvas.toDataURL('image/jpeg', 0.7));
                 };
                 img.src = dataURL;
@@ -521,7 +569,6 @@
             if (!file) return;
             const reader = new FileReader();
             reader.onload = async (event) => {
-                // Resize and compress the image immediately on selection
                 tempImageData = await resizeImage(event.target.result);
                 updateImagePreview(tempImageData);
             };
@@ -532,6 +579,28 @@
             const preview = document.getElementById('image-preview');
             preview.innerHTML = `<img src="${src}" class="w-full h-full object-cover">`;
             preview.classList.remove('hidden');
+        }
+
+        async function handleFulfillImagePreview(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                fulfillTempImageData = await resizeImage(event.target.result);
+                updateFulfillImagePreview(fulfillTempImageData);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateFulfillImagePreview(src) {
+            const preview = document.getElementById('fulfill-image-preview');
+            if (src) {
+                preview.innerHTML = `<img src="${src}" class="w-full h-full object-cover">`;
+                preview.classList.remove('hidden');
+            } else {
+                preview.innerHTML = '';
+                preview.classList.add('hidden');
+            }
         }
 
         document.getElementById('wish-form').onsubmit = (e) => {
@@ -561,7 +630,29 @@
 
         function openFulfillModal(id) {
             fulfillTargetId = id;
-            setFulfillType('bought');
+            const wish = wishes.find(w => w.id === id);
+            if (!wish) return;
+
+            fulfillTempImageData = wish.photo || null;
+            updateFulfillImagePreview(fulfillTempImageData);
+
+            const type = wish.fulfillType || 'bought';
+            setFulfillType(type);
+
+            if (type === 'bought') {
+                document.getElementById('purchase-type').value = wish.purchaseType || 'Retail';
+                document.getElementById('purchase-price').value = wish.purchasePrice !== undefined ? wish.purchasePrice : (wish.price || '');
+                document.getElementById('gift-giver').value = '';
+            } else {
+                document.getElementById('gift-giver').value = wish.giftGiver || '';
+                document.getElementById('purchase-price').value = '';
+            }
+
+            const titleEl = document.getElementById('fulfill-modal-title');
+            if (titleEl) {
+                titleEl.innerText = wish.fulfilled ? 'Edit Granted Wish' : 'Wish Fulfilled!';
+            }
+
             const modal = document.getElementById('fulfill-modal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -592,8 +683,11 @@
             if (!wish) return;
 
             wish.fulfilled = true;
-            wish.dateFulfilled = new Date().toISOString();
+            if (!wish.dateFulfilled) {
+                wish.dateFulfilled = new Date().toISOString();
+            }
             wish.fulfillType = fulfillType;
+            wish.photo = fulfillTempImageData;
 
             if (fulfillType === 'bought') {
                 wish.purchaseType = document.getElementById('purchase-type').value;
@@ -744,6 +838,20 @@
         function renderGallery() {
             const container = document.getElementById('gallery-container');
             const items = wishes.filter(w => w.fulfilled);
+
+            // Calculate Total Saved
+            const totalSavings = items.reduce((sum, w) => {
+                if (w.fulfillType === 'bought' && w.price && w.purchasePrice !== undefined && w.price > w.purchasePrice) {
+                    return sum + (w.price - w.purchasePrice);
+                }
+                return sum;
+            }, 0);
+
+            const savedAmountEl = document.getElementById('total-saved-amount');
+            if (savedAmountEl) {
+                savedAmountEl.innerText = formatCurrency(totalSavings);
+            }
+
             if (items.length === 0) {
                 container.innerHTML = `<p class="text-center py-20 text-slate-500 italic">Your granted wishes will appear here.</p>`;
                 return;
@@ -771,9 +879,12 @@
                                     ${savings > 0 ? `<span class="text-[8px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">Saved ${formatCurrency(savings)}</span>` : ''}
                                 </div>
                             </div>
-                            <div class="flex justify-between items-end">
+                            <div class="flex justify-between items-end mt-2">
                                 <span class="text-[10px] text-slate-400">${new Date(w.dateFulfilled).toLocaleDateString()}</span>
-                                <button onclick="deleteWish(event, '${w.id}')" class="text-slate-300 hover:text-red-400 active:scale-90 transition-all"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                                <div class="flex gap-2 items-center">
+                                    <button onclick="openFulfillModal('${w.id}')" class="text-[10px] bg-slate-200 text-slate-600 px-2.5 py-1 rounded-md font-bold active:scale-95 transition-transform">Edit</button>
+                                    <button onclick="deleteWish(event, '${w.id}')" class="text-slate-300 hover:text-red-400 active:scale-90 transition-all"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -834,7 +945,7 @@
         }
 
         function exportData() {
-            const dataToExport = { wishes, friends, version: "2.3" };
+            const dataToExport = { wishes, friends, version: "2.5" };
             const blob = new Blob([JSON.stringify(dataToExport)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -865,4 +976,3 @@
     </script>
 </body>
 </html>
-
